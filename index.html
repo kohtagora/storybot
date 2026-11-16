@@ -200,7 +200,7 @@ input:focus{border-color:var(--accent-line)}
 <script>
 (function(){
   var tg = window.Telegram && window.Telegram.WebApp;
-  var inTg = !!(tg && tg.initData);
+  var inTg = !!(tg && tg.platform && tg.platform !== "unknown");
   var P = new URLSearchParams(location.search);
   var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
   var MON3 = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
@@ -370,7 +370,12 @@ input:focus{border-color:var(--accent-line)}
                  address:S.mode==="offline" ? S.address.trim() : "", note:S.note, link:S.link,
                  photo:S.photo, designs:S.designs.slice() };
     try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
-    if (inTg) { tg.sendData(JSON.stringify(data)); }
+    if (inTg) {
+      try { tg.sendData(JSON.stringify(data)); }
+      catch(e){ toast("Не получилось отправить. Откройте окно кнопкой «🎨 Новая обложка» внизу чата с ботом."); return; }
+      // если окно не закрылось — значит, его открыли не той кнопкой (ссылкой или из меню)
+      setTimeout(function(){ toast("Ответ не ушёл. Закройте окно и откройте его кнопкой «🎨 Новая обложка» внизу чата с ботом (не ссылкой и не из меню)."); }, 1500);
+    }
     else { toast("Это просмотр. В Telegram ответы уйдут боту, и он пришлёт обложку."); }
   });
 
