@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Обложка для сторис</title>
+<title>Обложка анонса</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,6 +54,7 @@ h1 em,.pv-title em{font-style:italic;color:var(--accent)}
   font:600 14px/1 var(--sans);padding:12px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;
   transition:background .15s,border-color .15s,color .15s,transform .1s}
 .chip:active{transform:scale(.96)}
+.chip .net{font-weight:500;opacity:.7;margin-left:6px}
 .chip[aria-pressed="true"]{background:var(--on);border-color:var(--on);color:var(--on-ink)}
 .chip:focus-visible,.seg button:focus-visible,.btn:focus-visible,.design:focus-visible{outline:2px solid var(--accent-line);outline-offset:2px}
 .chip.day{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0;width:62px;border-radius:18px}
@@ -92,6 +93,9 @@ input:focus{border-color:var(--accent-line)}
 
 /* превью */
 .pv{display:grid;grid-template-columns:132px 1fr;gap:14px;align-items:center}
+.pv-card.post{aspect-ratio:4/5}
+.pv-card.wide{aspect-ratio:16/9;padding:8px 9px;gap:3px}
+.pv-card.wide .pv-title{font-size:11px}.pv-card.wide .pv-time{font-size:11px}
 .pv-card{aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3));
   color:#fff;padding:14px 11px;display:flex;flex-direction:column;justify-content:center;gap:5px;max-width:100%}
 .pv-date{font:600 8px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
@@ -125,9 +129,15 @@ input:focus{border-color:var(--accent-line)}
     <div class="mono" aria-hidden="true">НК</div>
     <div>
       <div class="eyebrow">Наталия Кверквеладзе</div>
-      <h1>Обложка для <em>сторис</em></h1>
+      <h1>Обложка <em>анонса</em></h1>
     </div>
   </header>
+
+  <section class="card">
+    <div class="q">Куда публикуем <small>можно несколько</small></div>
+    <div class="chips" id="nets"></div>
+    <p class="hint" id="netHint"></p>
+  </section>
 
   <section class="card">
     <div class="q">Когда <small id="dateHint"></small></div>
@@ -192,7 +202,7 @@ input:focus{border-color:var(--accent-line)}
       <div class="pv-list" id="pvList"></div>
     </div>
   </section>
-  <p class="hint" style="text-align:center;margin-top:4px">версия 3</p>
+  <p class="hint" style="text-align:center;margin-top:4px">версия 4</p>
 </div>
 
 <div class="bar"><div class="in"><button class="btn" id="go" type="button">Сделать обложку</button></div></div>
@@ -238,7 +248,11 @@ input:focus{border-color:var(--accent-line)}
   var hasLastPhoto = P.get("photo") === "1";
   var lastTime = P.get("time") || "";
 
-  var S = { date:null, time:null, kind:null, title:"", mode:"online", address:lastAddrs[0]||"", note:"", link:false,
+  var NETS = [["ig_story","Instagram","сторис","story"],["tg_story","Telegram","сторис","story"],
+              ["ig_post","Instagram","пост","post"],["fb_post","Facebook","пост","post"],["tg_post","Telegram","пост","wide"]];
+  var SIZES = {story:"сторис 1080×1920", post:"пост 1080×1350", wide:"пост 1280×720"};
+  var lastNets = P.getAll("net").filter(function(n){ return NETS.some(function(x){return x[0]===n}); });
+  var S = { nets: lastNets.length ? lastNets : ["ig_story","tg_story"], date:null, time:null, kind:null, title:"", mode:"online", address:lastAddrs[0]||"", note:"", link:false,
             photo: hasLastPhoto ? "last" : "send", designs:["photo","circle","gradient"] };
   var customDate = null, customTime = false, customAddr = !lastAddrs.length, noteMode = "none";
 
@@ -254,7 +268,19 @@ input:focus{border-color:var(--accent-line)}
     });
   }
 
+  function formats(){
+    var out = [];
+    NETS.forEach(function(n){ if (S.nets.indexOf(n[0])>=0 && out.indexOf(n[3])<0) out.push(n[3]); });
+    return out;
+  }
+  function plural(n){ var a=n%10, b=n%100; return n + " " + (a===1&&b!==11 ? "обложку" : a>=2&&a<=4&&(b<12||b>14) ? "обложки" : "обложек"); }
+
   function render(){
+    // соцсети
+    group($("nets"), NETS.map(function(n){ return {v:n[0], html: esc(n[1]) + '<span class="net">' + n[2] + "</span>"}; }),
+      function(v){ return S.nets.indexOf(v)>=0; },
+      function(v){ var i=S.nets.indexOf(v); if (i>=0){ if (S.nets.length>1) S.nets.splice(i,1); } else S.nets.push(v); });
+    $("netHint").textContent = "Размеры: " + formats().map(function(f){return SIZES[f]}).join(" · ");
     // дата
     var days = [];
     for (var i=0;i<14;i++){ var d=new Date(today); d.setDate(d.getDate()+i);
@@ -296,7 +322,7 @@ input:focus{border-color:var(--accent-line)}
     S.note = noteMode==="deputy" ? "Есть места заместителей" : noteMode==="custom" ? $("noteInput").value.trim() : "";
 
     // запись
-    group($("links"), [{v:false,html:"<b>В личных сообщениях</b><span>на обложке будет эта строка</span>"},{v:true,html:"<b>Кнопка-ссылка</b><span>оставим место под ссылку Telegram</span>"}],
+    group($("links"), [{v:false,html:"<b>В личных сообщениях</b><span>на обложке будет эта строка</span>"},{v:true,html:"<b>По ссылке</b><span>в сторис — место под кнопку-ссылку, в посте — «по ссылке в посте»</span>"}],
       function(v){ return S.link===v; }, function(v){ S.link = v; }, "x");
 
     // фото
@@ -340,12 +366,17 @@ input:focus{border-color:var(--accent-line)}
     $("pvTitle").innerHTML = title() ? accent(title()) : "Название";
     $("pvPlace").textContent = place() || "место";
     $("pvNote").textContent = S.note; $("pvNote").hidden = !S.note;
-    $("pvDm").hidden = S.link; $("pvSlot").hidden = !S.link;
+    var f0 = formats()[0], card = document.querySelector(".pv-card");
+    card.className = "pv-card" + (f0 !== "story" ? " " + f0 : "");
+    var slot = S.link && f0 === "story";
+    $("pvDm").textContent = S.link ? "Запись — по ссылке в посте" : "Запись — в личных сообщениях";
+    $("pvDm").hidden = slot; $("pvSlot").hidden = !slot;
     var names = {photo:"на фото",circle:"в круге",gradient:"градиент"};
     var rows = [["Дата", S.date ? dateLabel(S.date) : "—"],["Время", S.time ? S.time+" мск" : "—"],
       ["Событие", title() ? title().replace(/\*/g,"") : "—"],["Место", place() || "—"],
       ["Запись", S.link ? "кнопка-ссылка" : "в личных сообщениях"],
-      ["Дизайн", S.designs.map(function(k){return names[k]}).join(", ")]];
+      ["Дизайн", S.designs.map(function(k){return names[k]}).join(", ")],
+      ["Куда", NETS.filter(function(n){return S.nets.indexOf(n[0])>=0}).map(function(n){return n[1]+" "+n[2]}).join(", ")]];
     $("pvList").innerHTML = rows.map(function(r){ return "<div class='pv-row'><i>"+r[0]+"</i><b>"+esc(r[1])+"</b></div>"; }).join("");
   }
 
@@ -360,7 +391,8 @@ input:focus{border-color:var(--accent-line)}
   }
   function validate(){
     var m = missing(), b = $("go");
-    b.disabled = !!m; b.textContent = m || (S.designs.length > 1 ? "Сделать " + S.designs.length + " обложки" : "Сделать обложку");
+    var n = S.designs.length * formats().length;
+    b.disabled = !!m; b.textContent = m || (n > 1 ? "Сделать " + plural(n) : "Сделать обложку");
   }
 
   $("dateOther").addEventListener("change", function(){ if (this.value){ S.date = this.value; } render(); });
@@ -373,7 +405,7 @@ input:focus{border-color:var(--accent-line)}
 
   $("go").addEventListener("click", function(){
     if (missing()) return;
-    var data = { v:1, date:S.date, time:S.time, kind:S.kind, title:S.title.trim(), mode:S.mode,
+    var data = { v:2, nets:S.nets.slice(), date:S.date, time:S.time, kind:S.kind, title:S.title.trim(), mode:S.mode,
                  address:S.mode==="offline" ? S.address.trim() : "", note:S.note, link:S.link,
                  photo:S.photo, designs:S.designs.slice() };
     try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
@@ -392,7 +424,8 @@ input:focus{border-color:var(--accent-line)}
     var h = "c" + d.date.slice(2).replace(/-/g,"") + d.time.replace(":","").padStart(4,"0")
       + {group:"g",seminar:"s",custom:"c"}[d.kind] + (d.mode==="offline"?"f":"o")
       + (noteMode==="deputy"?"d":noteMode==="custom"?"c":"n") + (d.link?"1":"0")
-      + {send:"s",last:"l",none:"n"}[d.photo] + dm;
+      + {send:"s",last:"l",none:"n"}[d.photo] + dm
+      + String(NETS.reduce(function(m,n,i){ return m + (d.nets.indexOf(n[0])>=0 ? 1<<i : 0); }, 0)).padStart(2,"0");
     var texts = [d.kind==="custom"?d.title:"", d.mode==="offline"?d.address:"", noteMode==="custom"?d.note:""];
     if (!texts.join("")) return h + "t";
     // что не влезло — бот спросит в чате: сначала жертвуем припиской, потом названием
