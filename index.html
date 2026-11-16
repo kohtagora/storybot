@@ -192,6 +192,7 @@ input:focus{border-color:var(--accent-line)}
       <div class="pv-list" id="pvList"></div>
     </div>
   </section>
+  <p class="hint" style="text-align:center;margin-top:4px">версия 3</p>
 </div>
 
 <div class="bar"><div class="in"><button class="btn" id="go" type="button">Сделать обложку</button></div></div>
@@ -226,6 +227,12 @@ input:focus{border-color:var(--accent-line)}
   }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
   function accent(s){ return esc(s).replace(/\*([^*]+)\*/g, "<em>$1</em>"); }
+
+  // имя бота нужно для запасной отправки через /start; запоминаем его в облаке Telegram
+  var botName = (P.get("bot") || "").replace(/^@/,"");
+  function cloud(){ try { return tg && tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast("6.9") ? tg.CloudStorage : null; } catch(e){ return null; } }
+  if (botName) { try { cloud() && cloud().setItem("bot", botName); } catch(e){} }
+  else { try { cloud() && cloud().getItem("bot", function(err, v){ if (!err && v) botName = v; }); } catch(e){} }
 
   var lastAddrs = P.getAll("addr").filter(Boolean).slice(0,3);
   var hasLastPhoto = P.get("photo") === "1";
@@ -370,14 +377,45 @@ input:focus{border-color:var(--accent-line)}
                  address:S.mode==="offline" ? S.address.trim() : "", note:S.note, link:S.link,
                  photo:S.photo, designs:S.designs.slice() };
     try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
-    if (inTg) {
-      try { tg.sendData(JSON.stringify(data)); }
-      catch(e){ toast("Не получилось отправить. Откройте окно кнопкой «🎨 Новая обложка» внизу чата с ботом."); return; }
-      // если окно не закрылось — значит, его открыли не той кнопкой (ссылкой или из меню)
-      setTimeout(function(){ toast("Ответ не ушёл. Закройте окно и откройте его кнопкой «🎨 Новая обложка» внизу чата с ботом (не ссылкой и не из меню)."); }, 1500);
-    }
-    else { toast("Это просмотр. В Telegram ответы уйдут боту, и он пришлёт обложку."); }
+    if (inTg) { submit(data); return; }
+    else { toast("Окно открыто не в Telegram — это только просмотр, ответ никуда не отправляется."); }
   });
+
+  function b64u(str){
+    var bytes = new TextEncoder().encode(str), bin = "";
+    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  // короткий код для ссылки t.me/бот?start=… (Telegram пропускает до 64 знаков)
+  function payload(d){
+    var dm = (d.designs.indexOf("photo")>=0?1:0) + (d.designs.indexOf("circle")>=0?2:0) + (d.designs.indexOf("gradient")>=0?4:0);
+    var h = "c" + d.date.slice(2).replace(/-/g,"") + d.time.replace(":","").padStart(4,"0")
+      + {group:"g",seminar:"s",custom:"c"}[d.kind] + (d.mode==="offline"?"f":"o")
+      + (noteMode==="deputy"?"d":noteMode==="custom"?"c":"n") + (d.link?"1":"0")
+      + {send:"s",last:"l",none:"n"}[d.photo] + dm;
+    var texts = [d.kind==="custom"?d.title:"", d.mode==="offline"?d.address:"", noteMode==="custom"?d.note:""];
+    if (!texts.join("")) return h + "t";
+    // что не влезло — бот спросит в чате: сначала жертвуем припиской, потом названием
+    var tries = [texts, [texts[0], texts[1], ""], ["", texts[1], ""]];
+    for (var i=0;i<tries.length;i++){
+      if (!tries[i].join("")) continue;
+      var t = b64u(tries[i].join("\n"));
+      if (h.length + 1 + t.length <= 64) return h + "t" + t;
+    }
+    return h + "q";
+  }
+  function viaLink(data){
+    if (!botName) { toast("Ответ не ушёл. Откройте окно кнопкой «🎨 Новая обложка» внизу чата с ботом (если её нет — отправьте боту /start)."); return; }
+    try { tg.openTelegramLink("https://t.me/" + botName + "?start=" + payload(data)); } catch(e){}
+    setTimeout(function(){ try { tg.close(); } catch(e){} }, 400);
+  }
+  function submit(data){
+    // окно, открытое кнопкой клавиатуры, отдаёт ответ напрямую; остальные — через /start
+    if (!tg.initData) {
+      try { tg.sendData(JSON.stringify(data)); } catch(e){}
+      setTimeout(function(){ viaLink(data); }, 1200);   // если окно не закрылось — запасной путь
+    } else viaLink(data);
+  }
 
   // пример заполнения для просмотра вне Telegram
   if (!inTg && P.get("demo") !== "0") {
