@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Обложка для сторис</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Raleway:wght@400;500;600;700&display=swap">
+<style>
+/* Одна колонка карточек-вопросов, внизу закреплённая кнопка — как витрина внутри Telegram */
+:root{
+  --bg:#efeded; --card:#f8f7f7; --ink:#3b3a37; --mute:#86817d; --line:#dcd8d7;
+  --chip:#ffffff; --chip-ink:#3b3a37; --on:#ae3939; --on-ink:#ffffff; --soft:#f3e3e2;
+  --accent:#ae3939; --accent-line:#e28382; --graphite:#3f4144;
+  --g1:#f0726d; --g2:#f29a66; --g3:#f3ca91;
+  --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --sans:"Raleway","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1f1719; --card:#2c2124; --ink:#f4ecea; --mute:#a99a9b; --line:#46373b;
+  --chip:#33272a; --chip-ink:#f4ecea; --on:#e28382; --on-ink:#2a1b1e; --soft:#3d2c30;
+  --accent:#e9908f; --accent-line:#e28382; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1f1719; --card:#2c2124; --ink:#f4ecea; --mute:#a99a9b; --line:#46373b;
+  --chip:#33272a; --chip-ink:#f4ecea; --on:#e28382; --on-ink:#2a1b1e; --soft:#3d2c30;
+  --accent:#e9908f; --accent-line:#e28382; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:500 15px/1.4 var(--sans);-webkit-font-smoothing:antialiased;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));
+  padding-block:14px 120px}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+header{display:flex;gap:14px;align-items:center;padding:4px 2px 6px}
+.mono{width:44px;height:44px;border-radius:50%;flex:none;background:linear-gradient(135deg,var(--g1),var(--g2) 55%,var(--g3));
+  display:grid;place-items:center;color:#fff;font:600 17px/1 var(--serif);letter-spacing:.02em}
+.eyebrow{font:700 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+h1{margin:4px 0 0;font:500 26px/1.1 var(--serif);text-wrap:balance}
+h1 em,.pv-title em{font-style:italic;color:var(--accent)}
+
+.card{background:var(--card);border-radius:22px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
+.q{font:700 15px/1.2 var(--sans);display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.q small{font:500 12px/1.2 var(--sans);color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{appearance:none;border:1.5px solid var(--line);background:var(--chip);color:var(--chip-ink);
+  font:600 14px/1 var(--sans);padding:12px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s,transform .1s}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:var(--on);border-color:var(--on);color:var(--on-ink)}
+.chip:focus-visible,.seg button:focus-visible,.btn:focus-visible,.design:focus-visible{outline:2px solid var(--accent-line);outline-offset:2px}
+.chip.day{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 0;width:62px;border-radius:18px}
+.chip.day b{font:700 17px/1 var(--sans)}
+.chip.day span{font:600 11px/1 var(--sans);opacity:.75;text-transform:lowercase}
+.chip.ghost{border-style:dashed}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{appearance:none;border:1.5px solid var(--line);background:var(--chip);color:var(--chip-ink);border-radius:18px;
+  padding:14px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:5px;font-family:var(--sans)}
+.seg button b{font:700 15px/1.15 var(--sans)}
+.seg button span{font:500 12px/1.3 var(--sans);opacity:.75}
+.seg button[aria-pressed="true"]{background:var(--on);border-color:var(--on);color:var(--on-ink)}
+
+input[type=text],input[type=time],input[type=date]{width:100%;border:1.5px solid var(--line);background:var(--chip);color:var(--ink);
+  border-radius:16px;padding:13px 14px;font:500 15px/1.2 var(--sans);outline:none}
+input:focus{border-color:var(--accent-line)}
+.hint{font:500 12px/1.35 var(--sans);color:var(--mute);margin:-4px 2px 0}
+
+.designs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.design{appearance:none;border:1.5px solid var(--line);background:var(--chip);border-radius:18px;padding:8px;cursor:pointer;
+  display:flex;flex-direction:column;gap:8px;align-items:stretch;color:var(--chip-ink);font:600 12px/1.15 var(--sans);position:relative}
+.design[aria-pressed="true"]{border-color:var(--on);box-shadow:0 0 0 1.5px var(--on) inset}
+.design[disabled]{opacity:.35;cursor:not-allowed}
+.design .tick{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;background:var(--on);color:var(--on-ink);
+  display:none;place-items:center;font:700 12px/1 var(--sans)}
+.design[aria-pressed="true"] .tick{display:grid}
+.mini{aspect-ratio:9/16;border-radius:10px;overflow:hidden;position:relative;max-width:100%}
+.mini.photo{background:linear-gradient(180deg,#8d7c72,#4d423d 60%,#2c2421)}
+.mini.photo::after{content:"";position:absolute;left:10%;right:10%;bottom:12%;height:22%;border-radius:6px;background:rgba(255,255,255,.88)}
+.mini.circle{background:#e8e6e6}
+.mini.circle::before{content:"";position:absolute;left:18%;top:9%;width:64%;aspect-ratio:1;border-radius:50%;background:linear-gradient(160deg,#a08e83,#5a4b44)}
+.mini.circle::after{content:"";position:absolute;left:14%;right:14%;top:62%;height:4px;border-radius:2px;background:#3b3a37;box-shadow:0 9px 0 #ae3939,0 18px 0 #c9c4c2}
+.mini.gradient{background:linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3))}
+.mini.gradient::after{content:"";position:absolute;left:14%;right:24%;top:40%;height:5px;border-radius:2px;background:#fff;box-shadow:0 11px 0 #fff,0 22px 0 rgba(255,255,255,.6)}
+
+/* превью */
+.pv{display:grid;grid-template-columns:132px 1fr;gap:14px;align-items:center}
+.pv-card{aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,var(--g1),var(--g2) 55%,var(--g3));
+  color:#fff;padding:14px 11px;display:flex;flex-direction:column;justify-content:center;gap:5px;max-width:100%}
+.pv-date{font:600 8px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+.pv-time{font:600 15px/1 var(--serif)}
+.pv-title{font:500 15px/1.08 var(--serif);text-wrap:balance}
+.pv-card .pv-title em{color:#fff}
+.pv-place{font:600 8px/1.2 var(--sans);opacity:.92}
+.pv-pill{align-self:flex-start;background:#3f4144;color:#fff;border-radius:99px;padding:4px 7px;font:600 7px/1.1 var(--sans)}
+.pv-slot{border:1px dashed rgba(255,255,255,.85);border-radius:99px;height:18px;margin-top:6px}
+.pv-list{display:flex;flex-direction:column;gap:7px;min-width:0}
+.pv-row{display:flex;gap:8px;font:500 13px/1.3 var(--sans)}
+.pv-row i{font-style:normal;color:var(--mute);flex:none;width:58px}
+.pv-row b{font-weight:600;min-width:0;overflow-wrap:anywhere}
+
+/* нижняя панель */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(180deg,transparent,var(--bg) 26%);
+  padding:22px max(14px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.bar .in{max-width:520px;margin:0 auto}
+.btn{width:100%;appearance:none;border:0;border-radius:999px;padding:18px 20px;background:var(--on);color:var(--on-ink);
+  font:700 16px/1 var(--sans);cursor:pointer;transition:opacity .15s,transform .1s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.45;cursor:default;transform:none}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--graphite);color:#fff;border-radius:14px;
+  padding:12px 16px;font:500 13px/1.35 var(--sans);max-width:min(92vw,440px);z-index:6}
+@media (prefers-reduced-motion:reduce){.chip,.btn{transition:none}.chip:active,.btn:active{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mono" aria-hidden="true">НК</div>
+    <div>
+      <div class="eyebrow">Наталия Кверквеладзе</div>
+      <h1>Обложка для <em>сторис</em></h1>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="q">Когда <small id="dateHint"></small></div>
+    <div class="chips scroll" id="days"></div>
+    <input type="date" id="dateOther" hidden aria-label="Другая дата">
+  </section>
+
+  <section class="card">
+    <div class="q">Во сколько <small>по Москве</small></div>
+    <div class="chips" id="times"></div>
+    <input type="time" id="timeOther" hidden aria-label="Своё время">
+  </section>
+
+  <section class="card">
+    <div class="q">Что за событие</div>
+    <div class="chips" id="kinds"></div>
+    <input type="text" id="titleInput" hidden placeholder="Женская *группа* поддержки" aria-label="Своё название">
+    <p class="hint" id="titleHint" hidden>Слово в *звёздочках* выделится винным курсивом.</p>
+  </section>
+
+  <section class="card">
+    <div class="q">Где</div>
+    <div class="seg" id="modes"></div>
+    <div class="chips" id="addrs"></div>
+    <input type="text" id="addrInput" hidden placeholder="Адрес или место, например: На Аптекарском" aria-label="Адрес">
+  </section>
+
+  <section class="card">
+    <div class="q">Приписка <small>необязательно</small></div>
+    <div class="chips" id="notes"></div>
+    <input type="text" id="noteInput" hidden placeholder="Например: Осталось 3 места" aria-label="Своя приписка">
+  </section>
+
+  <section class="card">
+    <div class="q">Как записаться</div>
+    <div class="seg" id="links"></div>
+  </section>
+
+  <section class="card">
+    <div class="q">Фото для фона</div>
+    <div class="chips" id="photos"></div>
+    <p class="hint" id="photoHint"></p>
+  </section>
+
+  <section class="card">
+    <div class="q">Дизайн <small>можно несколько</small></div>
+    <div class="designs" id="designs"></div>
+  </section>
+
+  <section class="card">
+    <div class="q">Что получится <small>примерный вид</small></div>
+    <div class="pv">
+      <div class="pv-card" aria-hidden="true">
+        <div class="pv-date" id="pvDate"></div>
+        <div class="pv-time" id="pvTime"></div>
+        <div class="pv-title" id="pvTitle"></div>
+        <div class="pv-place" id="pvPlace"></div>
+        <div class="pv-pill" id="pvNote"></div>
+        <div class="pv-pill" id="pvDm">Запись — в личных сообщениях</div>
+        <div class="pv-slot" id="pvSlot"></div>
+      </div>
+      <div class="pv-list" id="pvList"></div>
+    </div>
+  </section>
+</div>
+
+<div class="bar"><div class="in"><button class="btn" id="go" type="button">Сделать обложку</button></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var inTg = !!(tg && tg.initData);
+  var P = new URLSearchParams(location.search);
+  var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  var MON3 = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
+  var WD = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+  var WD2 = ["вс","пн","вт","ср","чт","пт","сб"];
+  var $ = function(id){return document.getElementById(id)};
+
+  if (tg) {
+    try { tg.ready(); tg.expand(); } catch(e){}
+    if (tg.colorScheme) document.documentElement.setAttribute("data-theme", tg.colorScheme);
+    try { tg.onEvent("themeChanged", function(){ document.documentElement.setAttribute("data-theme", tg.colorScheme); }); } catch(e){}
+    try { tg.setHeaderColor("bg_color"); } catch(e){}
+  }
+  function haptic(){ try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} }
+
+  function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function fromIso(s){ var a=s.split("-"); return new Date(+a[0], +a[1]-1, +a[2]); }
+  var today = new Date(); today.setHours(0,0,0,0);
+  function dateLabel(s){
+    var d = fromIso(s), diff = Math.round((d - today)/864e5);
+    var w = diff===0 ? "сегодня" : diff===1 ? "завтра" : WD[d.getDay()];
+    return w + " · " + d.getDate() + " " + MONTHS[d.getMonth()];
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]}); }
+  function accent(s){ return esc(s).replace(/\*([^*]+)\*/g, "<em>$1</em>"); }
+
+  var lastAddrs = P.getAll("addr").filter(Boolean).slice(0,3);
+  var hasLastPhoto = P.get("photo") === "1";
+  var lastTime = P.get("time") || "";
+
+  var S = { date:null, time:null, kind:null, title:"", mode:"online", address:lastAddrs[0]||"", note:"", link:false,
+            photo: hasLastPhoto ? "last" : "send", designs:["photo","circle","gradient"] };
+  var customDate = null, customTime = false, customAddr = !lastAddrs.length, noteMode = "none";
+
+  function group(el, items, isOn, onPick, cls){
+    el.innerHTML = "";
+    items.forEach(function(it){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = (cls||"chip") + (it.cls ? " "+it.cls : "");
+      b.innerHTML = it.html || esc(it.label);
+      b.setAttribute("aria-pressed", isOn(it.v) ? "true" : "false");
+      b.addEventListener("click", function(){ onPick(it.v); haptic(); render(); });
+      el.appendChild(b);
+    });
+  }
+
+  function render(){
+    // дата
+    var days = [];
+    for (var i=0;i<14;i++){ var d=new Date(today); d.setDate(d.getDate()+i);
+      days.push({ v: iso(d), cls:"day", html:"<span>"+(i===0?"сегодня":i===1?"завтра":WD2[d.getDay()])+"</span><b>"+d.getDate()+"</b><span>"+MON3[d.getMonth()]+"</span>" }); }
+    days.push({ v:"other", cls:"day ghost", html:"<span>другая</span><b>…</b><span>дата</span>" });
+    group($("days"), days, function(v){ return v==="other" ? !!customDate : (!customDate && S.date===v); },
+      function(v){ if (v==="other"){ customDate = true; $("dateOther").hidden=false; try{$("dateOther").showPicker()}catch(e){$("dateOther").focus()} }
+                   else { customDate = false; $("dateOther").hidden = true; S.date = v; } });
+    $("dateHint").textContent = S.date ? dateLabel(S.date) : "";
+
+    // время
+    var base = ["11:00","12:00","18:00","18:30","19:00","19:30"];
+    if (lastTime && base.indexOf(lastTime) < 0) base.unshift(lastTime);
+    var times = base.map(function(t){ return {v:t, label:t}; }); times.push({v:"other", label:"Другое", cls:"ghost"});
+    group($("times"), times, function(v){ return v==="other" ? customTime : (!customTime && S.time===v); },
+      function(v){ if (v==="other"){ customTime = true; $("timeOther").hidden=false; S.time = $("timeOther").value || null; try{$("timeOther").showPicker()}catch(e){$("timeOther").focus()} }
+                   else { customTime = false; $("timeOther").hidden = true; S.time = v; } });
+
+    // событие
+    group($("kinds"), [{v:"group",label:"Клиентская группа"},{v:"seminar",label:"Семинар"},{v:"custom",label:"Своё название",cls:"ghost"}],
+      function(v){ return S.kind===v; }, function(v){ S.kind = v; });
+    $("titleInput").hidden = $("titleHint").hidden = S.kind !== "custom";
+
+    // где
+    group($("modes"), [{v:"online",html:"<b>Онлайн</b><span>на обложке — «Онлайн»</span>"},{v:"offline",html:"<b>Очно</b><span>укажем место</span>"}],
+      function(v){ return S.mode===v; }, function(v){ S.mode = v; }, "x");
+    var addrItems = lastAddrs.map(function(a){ return {v:a, label:a}; });
+    if (addrItems.length) addrItems.push({v:"__new", label:"Другое место", cls:"ghost"});
+    group($("addrs"), addrItems, function(v){ return v==="__new" ? customAddr : (!customAddr && S.address===v); },
+      function(v){ if (v==="__new"){ customAddr = true; S.address = $("addrInput").value.trim(); setTimeout(function(){$("addrInput").focus()},0); }
+                   else { customAddr = false; S.address = v; } });
+    $("addrs").hidden = S.mode !== "offline" || !addrItems.length;
+    $("addrInput").hidden = S.mode !== "offline" || !customAddr;
+
+    // приписка
+    group($("notes"), [{v:"none",label:"Без приписки"},{v:"deputy",label:"Есть места заместителей"},{v:"custom",label:"Свой текст",cls:"ghost"}],
+      function(v){ return noteMode===v; }, function(v){ noteMode = v; if (v==="custom") setTimeout(function(){$("noteInput").focus()},0); });
+    $("noteInput").hidden = noteMode !== "custom";
+    S.note = noteMode==="deputy" ? "Есть места заместителей" : noteMode==="custom" ? $("noteInput").value.trim() : "";
+
+    // запись
+    group($("links"), [{v:false,html:"<b>В личных сообщениях</b><span>на обложке будет эта строка</span>"},{v:true,html:"<b>Кнопка-ссылка</b><span>оставим место под ссылку Telegram</span>"}],
+      function(v){ return S.link===v; }, function(v){ S.link = v; }, "x");
+
+    // фото
+    var ph = [{v:"send",label:"Пришлю в чат"}];
+    if (hasLastPhoto) ph.unshift({v:"last",label:"Прошлое фото"});
+    ph.push({v:"none",label:"Без фото"});
+    group($("photos"), ph, function(v){ return S.photo===v; }, function(v){ S.photo = v; });
+    $("photoHint").textContent = S.photo==="send" ? "После кнопки бот попросит фото — лучше отправить его «как файл», так не теряется качество."
+      : S.photo==="last" ? "Возьмём фото из прошлой обложки." : "Подойдёт только дизайн с градиентом.";
+
+    // дизайн
+    var noPhoto = S.photo === "none";
+    if (noPhoto) S.designs = ["gradient"];
+    var dEl = $("designs"); dEl.innerHTML = "";
+    [["photo","На фото"],["circle","Фото в круге"],["gradient","Градиент"]].forEach(function(x){
+      var b = document.createElement("button"); b.type="button"; b.className="design";
+      var on = S.designs.indexOf(x[0]) >= 0; b.setAttribute("aria-pressed", on ? "true":"false");
+      b.disabled = noPhoto && x[0] !== "gradient";
+      b.innerHTML = '<div class="mini '+x[0]+'"></div><span class="tick">✓</span>'+x[1];
+      b.addEventListener("click", function(){
+        var i = S.designs.indexOf(x[0]);
+        if (i >= 0) { if (S.designs.length > 1) S.designs.splice(i,1); } else S.designs.push(x[0]);
+        haptic(); render();
+      });
+      dEl.appendChild(b);
+    });
+
+    preview(); validate();
+  }
+
+  function title(){
+    if (S.kind === "group") return S.mode==="offline" ? "Очная *клиентская* группа" : "*Клиентская* группа";
+    if (S.kind === "seminar") return S.mode==="offline" ? "Очный *семинар*" : "Расстановочный *семинар*";
+    return S.title;
+  }
+  function place(){ return S.mode==="offline" ? S.address : "Онлайн"; }
+
+  function preview(){
+    $("pvDate").textContent = S.date ? dateLabel(S.date) : "дата";
+    $("pvTime").textContent = S.time ? S.time + " мск" : "время";
+    $("pvTitle").innerHTML = title() ? accent(title()) : "Название";
+    $("pvPlace").textContent = place() || "место";
+    $("pvNote").textContent = S.note; $("pvNote").hidden = !S.note;
+    $("pvDm").hidden = S.link; $("pvSlot").hidden = !S.link;
+    var names = {photo:"на фото",circle:"в круге",gradient:"градиент"};
+    var rows = [["Дата", S.date ? dateLabel(S.date) : "—"],["Время", S.time ? S.time+" мск" : "—"],
+      ["Событие", title() ? title().replace(/\*/g,"") : "—"],["Место", place() || "—"],
+      ["Запись", S.link ? "кнопка-ссылка" : "в личных сообщениях"],
+      ["Дизайн", S.designs.map(function(k){return names[k]}).join(", ")]];
+    $("pvList").innerHTML = rows.map(function(r){ return "<div class='pv-row'><i>"+r[0]+"</i><b>"+esc(r[1])+"</b></div>"; }).join("");
+  }
+
+  function missing(){
+    if (!S.date) return "Выберите дату";
+    if (!S.time) return "Выберите время";
+    if (!S.kind) return "Выберите событие";
+    if (S.kind==="custom" && !S.title.trim()) return "Напишите название";
+    if (S.mode==="offline" && !S.address.trim()) return "Укажите место";
+    if (noteMode==="custom" && !S.note) return "Напишите приписку";
+    return "";
+  }
+  function validate(){
+    var m = missing(), b = $("go");
+    b.disabled = !!m; b.textContent = m || (S.designs.length > 1 ? "Сделать " + S.designs.length + " обложки" : "Сделать обложку");
+  }
+
+  $("dateOther").addEventListener("change", function(){ if (this.value){ S.date = this.value; } render(); });
+  $("timeOther").addEventListener("input", function(){ S.time = this.value || null; preview(); validate(); });
+  $("titleInput").addEventListener("input", function(){ S.title = this.value; preview(); validate(); });
+  $("addrInput").addEventListener("input", function(){ S.address = this.value.trim(); preview(); validate(); });
+  $("noteInput").addEventListener("input", function(){ S.note = this.value.trim(); preview(); validate(); });
+
+  function toast(t){ var el=$("toast"); el.textContent=t; el.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(function(){el.hidden=true},3200); }
+
+  $("go").addEventListener("click", function(){
+    if (missing()) return;
+    var data = { v:1, date:S.date, time:S.time, kind:S.kind, title:S.title.trim(), mode:S.mode,
+                 address:S.mode==="offline" ? S.address.trim() : "", note:S.note, link:S.link,
+                 photo:S.photo, designs:S.designs.slice() };
+    try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
+    if (inTg) { tg.sendData(JSON.stringify(data)); }
+    else { toast("Это просмотр. В Telegram ответы уйдут боту, и он пришлёт обложку."); }
+  });
+
+  // пример заполнения для просмотра вне Telegram
+  if (!inTg && P.get("demo") !== "0") {
+    var d = new Date(today); d.setDate(d.getDate()+3);
+    S.date = iso(d); S.time = "18:30"; S.kind = "group";
+  }
+  render();
+})();
+</script>
+</body>
+</html>
